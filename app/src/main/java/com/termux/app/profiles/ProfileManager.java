@@ -286,35 +286,40 @@ public class ProfileManager {
     }
 
     /**
-     * 手动检测并添加Proot发行版
-     * @return 新添加的Proot Profile数量
+     * 异步检测并添加Proot发行版
+     * @param callback 检测完成后的回调，返回新添加的数量
      */
-    public int detectAndAddProotDistros() {
-        List<Profile> detectedDistros = storageManager.detectProotDistros();
-        int added = 0;
-
-        for (Profile detected : detectedDistros) {
-            // 检查是否已存在
-            boolean exists = false;
-            for (Profile existing : profiles) {
-                if (existing.getType() == ProfileType.PROOT &&
-                    existing.getProotDistro() != null &&
-                    existing.getProotDistro().equals(detected.getProotDistro())) {
-                    exists = true;
-                    break;
+    public void detectAndAddProotDistrosAsync(ProotDetectionCallback callback) {
+        storageManager.detectProotDistrosAsync(detectedDistros -> {
+            int added = 0;
+            for (Profile detected : detectedDistros) {
+                boolean exists = false;
+                for (Profile existing : profiles) {
+                    if (existing.getType() == ProfileType.PROOT &&
+                        existing.getProotDistro() != null &&
+                        existing.getProotDistro().equals(detected.getProotDistro())) {
+                        exists = true;
+                        break;
+                    }
+                }
+                if (!exists) {
+                    profiles.add(detected);
+                    added++;
                 }
             }
-
-            if (!exists) {
-                profiles.add(detected);
-                added++;
+            if (added > 0) {
+                saveProfiles();
             }
-        }
+            if (callback != null) {
+                callback.onProotDetected(added);
+            }
+        });
+    }
 
-        if (added > 0) {
-            saveProfiles();
-        }
-
-        return added;
+    /**
+     * Proot检测回调接口
+     */
+    public interface ProotDetectionCallback {
+        void onProotDetected(int addedCount);
     }
 }

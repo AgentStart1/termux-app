@@ -32,8 +32,8 @@ public class ProfileStorageManager {
     public ProfileStorageManager(Context context) {
         this.context = context.getApplicationContext();
         this.profilesDir = new File(this.context.getFilesDir(), "profiles");
-        this.sshConfigFile = new File(this.context.getFilesDir().getParentFile()
-                .getParentFile(), SSH_CONFIG_FILE);
+        // SSH config位于$HOME/.ssh/config，Termux的HOME是files/home
+        this.sshConfigFile = new File(new File(this.context.getFilesDir(), "home"), SSH_CONFIG_FILE);
     }
 
     /**
@@ -305,25 +305,29 @@ public class ProfileStorageManager {
             }
         }
 
-        // 检测已安装的Proot发行版
-        List<Profile> prootProfiles = detectProotDistros();
-        for (Profile prootProfile : prootProfiles) {
-            // 检查是否已存在（通过发行版名称）
-            boolean exists = false;
-            for (Profile existing : allProfiles) {
-                if (existing.getType() == ProfileType.PROOT &&
-                    existing.getProotDistro() != null &&
-                    existing.getProotDistro().equals(prootProfile.getProotDistro())) {
-                    exists = true;
-                    break;
-                }
-            }
-            if (!exists) {
-                allProfiles.add(prootProfile);
-            }
-        }
-
         return allProfiles;
+    }
+
+    /**
+     * 异步检测Proot发行版
+     * @param callback 检测完成后的回调
+     */
+    public void detectProotDistrosAsync(ProotDetectionCallback callback) {
+        java.util.concurrent.ExecutorService executor = java.util.concurrent.Executors.newSingleThreadExecutor();
+        executor.execute(() -> {
+            List<Profile> prootProfiles = detectProotDistros();
+            if (callback != null) {
+                callback.onProotDistrosDetected(prootProfiles);
+            }
+            executor.shutdown();
+        });
+    }
+
+    /**
+     * Proot检测回调接口
+     */
+    public interface ProotDetectionCallback {
+        void onProotDistrosDetected(List<Profile> prootProfiles);
     }
 
     /**

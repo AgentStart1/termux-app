@@ -44,6 +44,7 @@ import com.termux.app.activities.SettingsActivity;
 import com.termux.shared.termux.crash.TermuxCrashUtils;
 import com.termux.shared.termux.settings.preferences.TermuxAppSharedPreferences;
 import com.termux.app.terminal.TermuxSessionsListViewController;
+import com.termux.shared.termux.shell.command.runner.terminal.TermuxSession;
 import com.termux.app.terminal.io.TerminalToolbarViewPager;
 import com.termux.app.terminal.TermuxTerminalViewClient;
 import com.termux.shared.termux.extrakeys.ExtraKeysView;
@@ -656,14 +657,46 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             profile = com.termux.app.profiles.ProfileManager.getInstance(this).getDefaultProfile();
         }
 
+        TermuxService service = getTermuxService();
+        if (service == null) return;
+
+        // Check max sessions (8 is the limit defined in TermuxTerminalSessionActivityClient)
+        if (service.getTermuxSessionsSize() >= 8) {
+            new AlertDialog.Builder(this)
+                .setTitle(R.string.title_max_terminals_reached)
+                .setMessage(R.string.msg_max_terminals_reached)
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+            return;
+        }
+
         // Build execution command from profile
         com.termux.shared.shell.command.ExecutionCommand command =
             com.termux.app.profiles.ProfileSessionHelper.buildExecutionCommand(profile);
 
-        // Create session with the command
-        // For now, we'll create a normal session and let the profile settings be applied
-        // In a full implementation, we would pass the command to TermuxService
-        mTermuxTerminalSessionActivityClient.addNewSession(false, profile.getName());
+        // Set required fields for terminal session
+        command.runner = com.termux.shared.shell.command.ExecutionCommand.Runner.TERMINAL_SESSION.getName();
+        command.shellName = profile.getName();
+        command.setShellCommandShellEnvironment = true;
+        command.terminalTranscriptRows = getProperties().getTerminalTranscriptRows();
+
+        // If working directory not set by profile, use current session's cwd or default
+        if (command.workingDirectory == null || command.workingDirectory.isEmpty()) {
+            TerminalSession currentSession = getCurrentSession();
+            if (currentSession != null) {
+                command.workingDirectory = currentSession.getCwd();
+            } else {
+                command.workingDirectory = getProperties().getDefaultWorkingDirectory();
+            }
+        }
+
+        TermuxSession newTermuxSession = service.createTermuxSession(command);
+        if (newTermuxSession == null) return;
+
+        TerminalSession newTerminalSession = newTermuxSession.getTerminalSession();
+        mTermuxTerminalSessionActivityClient.setCurrentSession(newTerminalSession);
+
+        getDrawer().closeDrawers();
     }
 
 
