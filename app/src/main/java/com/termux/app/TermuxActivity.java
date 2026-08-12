@@ -251,6 +251,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
 
         setToggleKeyboardView();
 
+        setProfilesButtonView();
+
         registerForContextMenu(mTerminalView);
 
         FileReceiverActivity.updateFileReceiverActivityComponentsState(this);
@@ -388,6 +390,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         Logger.logDebug(LOG_TAG, "onServiceConnected");
 
         mTermuxService = ((TermuxService.LocalBinder) service).service;
+
+        // Initialize ProfileSessionHelper
+        com.termux.app.profiles.ProfileSessionHelper.init(this);
 
         setTermuxSessionsListView();
 
@@ -592,6 +597,73 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             toggleTerminalToolbar();
             return true;
         });
+    }
+
+    private void setProfilesButtonView() {
+        findViewById(R.id.profiles_button).setOnClickListener(v -> {
+            showProfileListBottomSheet();
+        });
+    }
+
+    private void showProfileListBottomSheet() {
+        com.termux.app.profiles.ProfileListBottomSheet bottomSheet =
+            com.termux.app.profiles.ProfileListBottomSheet.newInstance();
+        bottomSheet.setOnProfileSelectedListener(new com.termux.app.profiles.ProfileListBottomSheet.OnProfileSelectedListener() {
+            @Override
+            public void onProfileSelected(com.termux.app.profiles.Profile profile) {
+                // Create new session with selected profile
+                createSessionWithProfile(profile);
+            }
+
+            @Override
+            public void onProfileCreate() {
+                // Show profile editor
+                showProfileEditor(null);
+            }
+
+            @Override
+            public void onProfileEdit(com.termux.app.profiles.Profile profile) {
+                // Show profile editor for editing
+                showProfileEditor(profile);
+            }
+
+            @Override
+            public void onProfileDelete(com.termux.app.profiles.Profile profile) {
+                // Delete profile
+                com.termux.app.profiles.ProfileManager.getInstance(TermuxActivity.this)
+                    .deleteProfile(profile.getId());
+            }
+        });
+        bottomSheet.show(getSupportFragmentManager(), "profile_list");
+    }
+
+    private void showProfileEditor(com.termux.app.profiles.Profile profile) {
+        com.termux.app.profiles.ProfileEditorFragment editor;
+        if (profile != null) {
+            editor = com.termux.app.profiles.ProfileEditorFragment.newInstance(profile.getId());
+        } else {
+            editor = com.termux.app.profiles.ProfileEditorFragment.newInstance();
+        }
+        editor.setOnProfileSavedListener(savedProfile -> {
+            // Profile saved, refresh list if needed
+        });
+        editor.show(getSupportFragmentManager(), "profile_editor");
+    }
+
+    private void createSessionWithProfile(com.termux.app.profiles.Profile profile) {
+        if (profile == null) {
+            // Use default profile
+            profile = com.termux.app.profiles.ProfileManager.getInstance(this).getDefaultProfile();
+        }
+
+        // Build execution command from profile
+        com.termux.shared.shell.command.ExecutionCommand command =
+            com.termux.app.profiles.ProfileSessionHelper.buildExecutionCommand(profile);
+
+        // Create session with the command
+        // For now, we'll create a normal session and let the profile settings be applied
+        // In a full implementation, we would pass the command to TermuxService
+        mTermuxTerminalSessionActivityClient.addNewSession(false, profile.getName());
     }
 
 
