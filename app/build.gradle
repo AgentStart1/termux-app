@@ -145,6 +145,10 @@ android {
     }
 }
 
+configurations.all {
+    exclude group: 'com.google.guava', module: 'listenablefuture'
+}
+
 dependencies {
     testImplementation "junit:junit:4.13.2"
     testImplementation "org.robolectric:robolectric:4.10"

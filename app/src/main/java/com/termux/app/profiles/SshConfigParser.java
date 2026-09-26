@@ -1,0 +1,290 @@
+package com.termux.app.profiles;
+
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import android.util.Log;
+
+/**
+ * SSH配置文件解析器
+ * 解析和生成~/.ssh/config文件
+ */
+public class SshConfigParser {
+
+    private static final String TAG = "SshConfigParser";
+
+    /**
+     * 解析SSH配置文件
+     * @param configFile 配置文件路径
+     * @return SSH Profile列表
+     */
+    public static List<Profile> parseSshConfig(File configFile) {
+        List<Profile> profiles = new ArrayList<>();
+
+        if (configFile == null || !configFile.exists()) {
+            Log.d(TAG, "SSH config file does not exist: " + configFile);
+            return profiles;
+        }
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(configFile));
+            String line;
+            Profile currentProfile = null;
+
+            while ((line = reader.readLine()) != null) {
+                line = line.trim();
+
+                // 跳过空行和注释
+                if (line.isEmpty() || line.startsWith("#")) {
+                    continue;
+                }
+
+                // 检查是否是Host条目
+                if (line.toLowerCase().startsWith("host ")) {
+                    // 保存之前的profile
+                    if (currentProfile != null && currentProfile.isValid()) {
+                        profiles.add(currentProfile);
+                    }
+
+                    // 创建新的profile
+                    String hostName = line.substring(5).trim();
+                    currentProfile = new Profile(hostName, ProfileType.SSH);
+                    currentProfile.setSshHost(hostName);
+                } else if (currentProfile != null) {
+                    // 解析配置项
+                    parseSshConfigLine(line, currentProfile);
+                }
+            }
+
+            // 保存最后一个profile
+            if (currentProfile != null && currentProfile.isValid()) {
+                profiles.add(currentProfile);
+            }
+
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading SSH config file", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error closing SSH config file", e);
+                }
+            }
+        }
+
+        return profiles;
+    }
+
+    /**
+     * 解析单行SSH配置
+     * @param line 配置行
+     * @param profile 当前Profile
+     */
+    private static void parseSshConfigLine(String line, Profile profile) {
+        String[] parts = line.split("\\s+", 2);
+        if (parts.length < 2) {
+            return;
+        }
+
+        String key = parts[0].toLowerCase();
+        String value = parts[1].trim();
+
+        switch (key) {
+            case "hostname":
+                profile.setSshHost(value);
+                break;
+            case "user":
+                profile.setSshUser(value);
+                break;
+            case "port":
+                try {
+                    profile.setSshPort(Integer.parseInt(value));
+                } catch (NumberFormatException e) {
+                    Log.w(TAG, "Invalid port number: " + value);
+                }
+                break;
+            case "identityfile":
+                profile.setSshKeyFile(value);
+                break;
+            case "proxycommand":
+            case "forwardagent":
+            case "forwardx11":
+            case "stricthostkeychecking":
+            case "userknownhostsfile":
+                // 保存额外的SSH参数
+                String existingArgs = profile.getSshArgs();
+                if (existingArgs == null || existingArgs.isEmpty()) {
+                    profile.setSshArgs(line);
+                } else {
+                    profile.setSshArgs(existingArgs + "\n" + line);
+                }
+                break;
+        }
+    }
+
+    /**
+     * 将SSH Profiles写入配置文件
+     * @param configFile 配置文件路径
+     * @param profiles SSH Profile列表
+     * @param preserveExisting 是否保留现有配置
+     * @return 是否成功
+     */
+    public static boolean writeSshConfig(File configFile, List<Profile> profiles, boolean preserveExisting) {
+        if (configFile == null || profiles == null) {
+            return false;
+        }
+
+        // 如果需要保留现有配置，先读取
+        Map<String, String> existingEntries = new HashMap<>();
+        if (preserveExisting && configFile.exists()) {
+            existingEntries = readRawSshConfig(configFile);
+        }
+
+        FileWriter writer = null;
+        try {
+            // 确保目录存在
+            File parentDir = configFile.getParentFile();
+            if (parentDir != null && !parentDir.exists()) {
+                parentDir.mkdirs();
+            }
+
+            writer = new FileWriter(configFile);
+
+            // 写入文件头
+            writer.write("# SSH config file generated by Termux Profile Manager\n");
+            writer.write("# Do not edit manually if managed by Termux\n\n");
+
+            // 写入Termux管理的profiles
+            for (Profile profile : profiles) {
+                if (profile.getType() == ProfileType.SSH && profile.isValid()) {
+                    writeProfileToConfig(writer, profile);
+                }
+            }
+
+            // 如果保留现有配置，写入非Termux管理的条目
+            if (preserveExisting) {
+                for (Map.Entry<String, String> entry : existingEntries.entrySet()) {
+                    // 只写入不是Termux管理的条目
+                    if (!isTermuxManaged(entry.getValue())) {
+                        writer.write(entry.getValue());
+                    }
+                }
+            }
+
+            writer.flush();
+            return true;
+
+        } catch (IOException e) {
+            Log.e(TAG, "Error writing SSH config file", e);
+            return false;
+        } finally {
+            if (writer != null) {
+                try {
+                    writer.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error closing SSH config file", e);
+                }
+            }
+        }
+    }
+
+    /**
+     * 读取原始SSH配置文件内容
+     * @param configFile 配置文件
+     * @return 按Host条目组织的配置内容
+     */
+    private static Map<String, String> readRawSshConfig(File configFile) {
+        Map<String, String> entries = new HashMap<>();
+        StringBuilder currentEntry = new StringBuilder();
+        String currentHost = null;
+
+        BufferedReader reader = null;
+        try {
+            reader = new BufferedReader(new FileReader(configFile));
+            String line;
+
+            while ((line = reader.readLine()) != null) {
+                if (line.toLowerCase().startsWith("host ")) {
+                    // 保存之前的条目
+                    if (currentHost != null) {
+                        entries.put(currentHost, currentEntry.toString());
+                    }
+                    currentHost = line.substring(5).trim();
+                    currentEntry = new StringBuilder();
+                    currentEntry.append(line).append("\n");
+                } else if (currentHost != null) {
+                    currentEntry.append(line).append("\n");
+                }
+            }
+
+            // 保存最后一个条目
+            if (currentHost != null) {
+                entries.put(currentHost, currentEntry.toString());
+            }
+
+        } catch (IOException e) {
+            Log.e(TAG, "Error reading SSH config file", e);
+        } finally {
+            if (reader != null) {
+                try {
+                    reader.close();
+                } catch (IOException e) {
+                    Log.e(TAG, "Error closing SSH config file", e);
+                }
+            }
+        }
+
+        return entries;
+    }
+
+    /**
+     * 检查配置是否是Termux管理的
+     * @param configContent 配置内容
+     * @return 是否是Termux管理的
+     */
+    private static boolean isTermuxManaged(String configContent) {
+        return configContent.contains("# SSH config file generated by Termux Profile Manager");
+    }
+
+    /**
+     * 将单个Profile写入配置文件
+     * @param writer FileWriter
+     * @param profile SSH Profile
+     * @throws IOException 如果写入失败
+     */
+    private static void writeProfileToConfig(java.io.Writer writer, Profile profile) throws IOException {
+        writer.write("# Termux Profile: " + profile.getName() + "\n");
+        writer.write("Host " + profile.getSshHost() + "\n");
+
+        if (profile.getSshUser() != null && !profile.getSshUser().isEmpty()) {
+            writer.write("    User " + profile.getSshUser() + "\n");
+        }
+
+        if (profile.getSshPort() != 22) {
+            writer.write("    Port " + profile.getSshPort() + "\n");
+        }
+
+        if (profile.getSshKeyFile() != null && !profile.getSshKeyFile().isEmpty()) {
+            writer.write("    IdentityFile " + profile.getSshKeyFile() + "\n");
+        }
+
+        // 写入额外的SSH参数
+        if (profile.getSshArgs() != null && !profile.getSshArgs().isEmpty()) {
+            String[] args = profile.getSshArgs().split("\n");
+            for (String arg : args) {
+                writer.write("    " + arg.trim() + "\n");
+            }
+        }
+
+        writer.write("\n");
+    }
+}
