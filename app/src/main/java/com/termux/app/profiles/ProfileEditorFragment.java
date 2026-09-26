@@ -1,305 +1,120 @@
 package com.termux.app.profiles;
-
 import android.os.Bundle;
-import android.util.Log;
-import android.view.LayoutInflater;
-import android.view.View;
-import android.view.ViewGroup;
-import android.widget.ArrayAdapter;
-import android.widget.Button;
-import android.widget.EditText;
-import android.widget.LinearLayout;
-import android.widget.Spinner;
-import android.widget.Toast;
-
-import androidx.annotation.NonNull;
-import androidx.annotation.Nullable;
-
+import android.view.*;
+import android.widget.*;
+import androidx.annotation.*;
 import com.google.android.material.bottomsheet.BottomSheetDialogFragment;
-import com.google.android.material.switchmaterial.SwitchMaterial;
 import com.termux.R;
+import java.util.*;
 
-/**
- * Profile编辑器底部弹窗
- * 支持创建和编辑Profile
- */
 public class ProfileEditorFragment extends BottomSheetDialogFragment {
-
-    private static final String TAG = "ProfileEditorFragment";
-    private static final String ARG_PROFILE_ID = "profile_id";
-    private static final String ARG_IS_EDIT_MODE = "is_edit_mode";
-
-    public interface OnProfileSavedListener {
-        void onProfileSaved(Profile profile);
-    }
-
+    public interface OnProfileSavedListener { void onProfileSaved(Profile profile); }
     private OnProfileSavedListener listener;
     private Profile profile;
-    private boolean isEditMode;
+    private EditText name, directory, environment, command;
+    private Spinner bases;
+    private Button save;
+    private boolean editing;
 
-    // UI组件
-    private EditText editName;
-    private Spinner spinnerType;
-    private EditText editShell;
-    private EditText editWorkingDir;
-
-    // Proot相关
-    private LinearLayout layoutProot;
-    private EditText editProotDistro;
-    private EditText editProotArgs;
-    private EditText editProotCommand;
-
-    // SSH相关
-    private LinearLayout layoutSsh;
-    private EditText editSshHost;
-    private EditText editSshPort;
-    private EditText editSshUser;
-    private EditText editSshKeyFile;
-    private EditText editSshArgs;
-
-    private com.google.android.material.floatingactionbutton.FloatingActionButton buttonSave;
-    private com.google.android.material.button.MaterialButton buttonCancel;
-
-    public static ProfileEditorFragment newInstance() {
-        return new ProfileEditorFragment();
+    public static ProfileEditorFragment newInstance() { return new ProfileEditorFragment(); }
+    public static ProfileEditorFragment newInstance(String id) {
+        ProfileEditorFragment result = newInstance();
+        Bundle args = new Bundle(); args.putString("profile_id", id); result.setArguments(args);
+        return result;
     }
-
-    public static ProfileEditorFragment newInstance(String profileId) {
-        ProfileEditorFragment fragment = new ProfileEditorFragment();
-        Bundle args = new Bundle();
-        args.putString(ARG_PROFILE_ID, profileId);
-        args.putBoolean(ARG_IS_EDIT_MODE, true);
-        fragment.setArguments(args);
-        return fragment;
+    public void setOnProfileSavedListener(OnProfileSavedListener value) { listener = value; }
+    @Nullable @Override public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup parent, @Nullable Bundle state) {
+        return inflater.inflate(R.layout.fragment_profile_editor, parent, false);
     }
-
-    public void setOnProfileSavedListener(OnProfileSavedListener listener) {
-        this.listener = listener;
+    @Override public void onViewCreated(@NonNull View view, @Nullable Bundle state) {
+        name = view.findViewById(R.id.edit_name);
+        directory = view.findViewById(R.id.edit_working_dir);
+        environment = view.findViewById(R.id.edit_profile_environment);
+        command = view.findViewById(R.id.edit_proot_command);
+        bases = view.findViewById(R.id.spinner_type);
+        save = view.findViewById(R.id.button_save);
+        save.setEnabled(false);
+        editing = getArguments() != null && getArguments().containsKey("profile_id");
+        view.findViewById(R.id.button_cancel).setOnClickListener(v -> dismiss());
+        view.findViewById(R.id.button_refresh_connections).setOnClickListener(v -> refreshBases());
+        save.setOnClickListener(v -> saveProfile());
+        if (state != null && state.containsKey("draft")) {
+            try { profile = Profile.fromJson(new org.json.JSONObject(state.getString("draft"))); }
+            catch (Exception ignored) { profile = null; }
+        }
+        if (profile != null) { populate(); refreshBases(); }
+        else if (editing) ProfileManager.getInstance(requireContext()).getProfile(getViewLifecycleOwner(),
+            getArguments().getString("profile_id"), loaded -> {
+                if (loaded == null) { dismiss(); return; }
+                profile = loaded; populate(); refreshBases();
+            });
+        else { profile = new Profile(); refreshBases(); }
     }
-
-    @Override
-    public void onCreate(@Nullable Bundle savedInstanceState) {
-        super.onCreate(savedInstanceState);
-        if (getArguments() != null) {
-            String profileId = getArguments().getString(ARG_PROFILE_ID);
-            isEditMode = getArguments().getBoolean(ARG_IS_EDIT_MODE, false);
-
-            if (profileId != null) {
-                profile = ProfileManager.getInstance(requireContext()).getProfile(profileId);
+    private void populate() {
+        name.setText(profile.getName()); directory.setText(profile.getWorkingDirectory());
+        command.setText(profile.getStartupCommand());
+        StringBuilder text = new StringBuilder();
+        for (Map.Entry<String,String> item : profile.getEnvironmentVariables().entrySet())
+            text.append(item.getKey()).append("=").append(item.getValue()).append("\n");
+        environment.setText(text);
+    }
+    private void refreshBases() {
+        if (profile == null) return;
+        BaseConnection current = (BaseConnection) bases.getSelectedItem();
+        if (current != null) { profile.setType(current.type); profile.setBaseId(current.id); }
+        save.setEnabled(false);
+        ProfileManager.getInstance(requireContext()).connections(getViewLifecycleOwner(), found -> {
+            List<BaseConnection> choices = new ArrayList<>(found);
+            int selected = -1;
+            for (int i=0;i<choices.size();i++) if (choices.get(i).matches(profile)) selected=i;
+            if (selected < 0 && !profile.getBaseId().isEmpty()) {
+                choices.add(new BaseConnection(profile.getType(), profile.getBaseId()) {
+                    @Override public String toString() { return super.toString() + " (unavailable)"; }
+                });
+                selected=choices.size()-1;
             }
-        }
-
-        if (profile == null) {
-            profile = new Profile();
-            isEditMode = false;
-        }
-    }
-
-    @Nullable
-    @Override
-    public View onCreateView(@NonNull LayoutInflater inflater, @Nullable ViewGroup container,
-                           @Nullable Bundle savedInstanceState) {
-        return inflater.inflate(R.layout.fragment_profile_editor, container, false);
-    }
-
-    @Override
-    public void onViewCreated(@NonNull View view, @Nullable Bundle savedInstanceState) {
-        super.onViewCreated(view, savedInstanceState);
-
-        initViews(view);
-        setupTypeSpinner();
-        setupTypeChangeListener();
-        setupButtons();
-
-        if (isEditMode && profile != null) {
-            populateFields();
-        }
-    }
-
-    @Override
-    public void onStart() {
-        super.onStart();
-        // 设置BottomSheet窗口的softInputMode，使布局在键盘弹出时正确调整
-        if (getDialog() != null && getDialog().getWindow() != null) {
-            getDialog().getWindow().setSoftInputMode(
-                android.view.WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
-        }
-    }
-
-    private void initViews(View view) {
-        editName = view.findViewById(R.id.edit_name);
-        spinnerType = view.findViewById(R.id.spinner_type);
-        editShell = view.findViewById(R.id.edit_shell);
-        editWorkingDir = view.findViewById(R.id.edit_working_dir);
-
-        // Proot相关
-        layoutProot = view.findViewById(R.id.layout_proot);
-        editProotDistro = view.findViewById(R.id.edit_proot_distro);
-        editProotArgs = view.findViewById(R.id.edit_proot_args);
-        editProotCommand = view.findViewById(R.id.edit_proot_command);
-
-        // SSH相关
-        layoutSsh = view.findViewById(R.id.layout_ssh);
-        editSshHost = view.findViewById(R.id.edit_ssh_host);
-        editSshPort = view.findViewById(R.id.edit_ssh_port);
-        editSshUser = view.findViewById(R.id.edit_ssh_user);
-        editSshKeyFile = view.findViewById(R.id.edit_ssh_key_file);
-        editSshArgs = view.findViewById(R.id.edit_ssh_args);
-
-        buttonSave = view.findViewById(R.id.button_save);
-        buttonCancel = view.findViewById(R.id.button_cancel);
-    }
-
-    private void setupTypeSpinner() {
-        ArrayAdapter<ProfileType> adapter = new ArrayAdapter<>(
-                requireContext(),
-                android.R.layout.simple_spinner_item,
-                ProfileType.values()
-        );
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinnerType.setAdapter(adapter);
-
-        // 设置当前类型
-        if (profile != null) {
-            for (int i = 0; i < ProfileType.values().length; i++) {
-                if (ProfileType.values()[i] == profile.getType()) {
-                    spinnerType.setSelection(i);
-                    break;
-                }
-            }
-        }
-    }
-
-    private void setupTypeChangeListener() {
-        spinnerType.setOnItemSelectedListener(new android.widget.AdapterView.OnItemSelectedListener() {
-            @Override
-            public void onItemSelected(android.widget.AdapterView<?> parent, View view, int position, long id) {
-                ProfileType selectedType = (ProfileType) parent.getItemAtPosition(position);
-                updateFieldVisibility(selectedType);
-            }
-
-            @Override
-            public void onNothingSelected(android.widget.AdapterView<?> parent) {
-                // 默认显示Local
-                updateFieldVisibility(ProfileType.LOCAL);
-            }
+            ArrayAdapter<BaseConnection> adapter = new ArrayAdapter<>(requireContext(), android.R.layout.simple_spinner_item, choices);
+            adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
+            bases.setAdapter(adapter); if (selected >= 0) bases.setSelection(selected);
+            save.setEnabled(true);
         });
     }
-
-    private void updateFieldVisibility(ProfileType type) {
-        // 隐藏所有特殊字段
-        layoutProot.setVisibility(View.GONE);
-        layoutSsh.setVisibility(View.GONE);
-
-        // 根据类型显示相应字段
-        switch (type) {
-            case LOCAL:
-                // 只显示通用字段
-                break;
-            case PROOT:
-                layoutProot.setVisibility(View.VISIBLE);
-                break;
-            case SSH:
-                layoutSsh.setVisibility(View.VISIBLE);
-                break;
+    private void readFields() {
+        profile.setName(name.getText().toString());
+        profile.setWorkingDirectory(directory.getText().toString());
+        profile.setStartupCommand(command.getText().toString());
+        BaseConnection base = (BaseConnection) bases.getSelectedItem();
+        if (base != null) { profile.setType(base.type); profile.setBaseId(base.id); }
+        Map<String,String> env = new LinkedHashMap<>();
+        for (String line : environment.getText().toString().split("\n")) {
+            if (line.trim().isEmpty()) continue;
+            int equals=line.indexOf('=');
+            if (equals <= 0) throw new IllegalArgumentException("Use NAME=value for each environment variable");
+            String key=line.substring(0,equals);
+            if (env.containsKey(key)) throw new IllegalArgumentException("Duplicate environment variable");
+            env.put(key,line.substring(equals+1));
         }
+        profile.setEnvironmentVariables(env);
     }
-
-    private void setupButtons() {
-        buttonSave.setOnClickListener(v -> saveProfile());
-        buttonCancel.setOnClickListener(v -> dismiss());
-    }
-
-    private void populateFields() {
-        if (profile == null) return;
-
-        editName.setText(profile.getName());
-        editShell.setText(profile.getShell());
-        editWorkingDir.setText(profile.getWorkingDirectory());
-
-        // Proot相关
-        editProotDistro.setText(profile.getProotDistro());
-        editProotArgs.setText(profile.getProotArgs());
-        editProotCommand.setText(profile.getProotCommand());
-
-        // SSH相关
-        editSshHost.setText(profile.getSshHost());
-        editSshPort.setText(String.valueOf(profile.getSshPort()));
-        editSshUser.setText(profile.getSshUser());
-        editSshKeyFile.setText(profile.getSshKeyFile());
-        editSshArgs.setText(profile.getSshArgs());
-    }
-
     private void saveProfile() {
-        String name = editName.getText().toString().trim();
-        Log.d(TAG, "saveProfile: name='" + name + "'");
-        if (name.isEmpty()) {
-            editName.setError("Name is required");
-            Log.d(TAG, "saveProfile: name is empty");
-            return;
+        try {
+            readFields();
+            if (!profile.isValid()) throw new IllegalArgumentException("Check name, base connection and environment variable names");
+        } catch (IllegalArgumentException error) {
+            Toast.makeText(requireContext(), error.getMessage(), Toast.LENGTH_LONG).show(); return;
         }
-
-        ProfileType type = (ProfileType) spinnerType.getSelectedItem();
-
-        // 创建或更新profile
-        if (isEditMode && profile != null) {
-            profile.setName(name);
-        } else {
-            profile = new Profile(name, type);
-        }
-
-        profile.setType(type);
-        profile.setShell(editShell.getText().toString().trim());
-        profile.setWorkingDirectory(editWorkingDir.getText().toString().trim());
-
-        // Proot相关
-        if (type == ProfileType.PROOT) {
-            profile.setProotDistro(editProotDistro.getText().toString().trim());
-            profile.setProotArgs(editProotArgs.getText().toString().trim());
-            profile.setProotCommand(editProotCommand.getText().toString().trim());
-        }
-
-        // SSH相关
-        if (type == ProfileType.SSH) {
-            profile.setSshHost(editSshHost.getText().toString().trim());
-
-            String portStr = editSshPort.getText().toString().trim();
-            try {
-                profile.setSshPort(Integer.parseInt(portStr));
-            } catch (NumberFormatException e) {
-                profile.setSshPort(22);
-            }
-
-            profile.setSshUser(editSshUser.getText().toString().trim());
-            profile.setSshKeyFile(editSshKeyFile.getText().toString().trim());
-            profile.setSshArgs(editSshArgs.getText().toString().trim());
-        }
-
-        // 验证profile
-        if (!profile.isValid()) {
-            Log.d(TAG, "saveProfile: profile is invalid, type=" + profile.getType() + ", sshHost=" + profile.getSshHost() + ", sshUser=" + profile.getSshUser());
-            Toast.makeText(requireContext(), "Invalid profile configuration", Toast.LENGTH_SHORT).show();
-            return;
-        }
-        Log.d(TAG, "saveProfile: profile is valid, saving...");
-
-        // 保存profile
-        ProfileManager profileManager = ProfileManager.getInstance(requireContext());
-        boolean success;
-        if (isEditMode) {
-            success = profileManager.updateProfile(profile);
-        } else {
-            success = profileManager.createProfile(profile);
-        }
-
-        if (success) {
-            Toast.makeText(requireContext(), "Profile saved", Toast.LENGTH_SHORT).show();
-            if (listener != null) {
-                listener.onProfileSaved(profile);
-            }
-            dismiss();
-        } else {
-            Toast.makeText(requireContext(), "Failed to save profile", Toast.LENGTH_SHORT).show();
+        save.setEnabled(false);
+        ProfileManager.getInstance(requireContext()).saveProfile(getViewLifecycleOwner(), profile, editing, success -> {
+            save.setEnabled(true);
+            if (success) { if (listener != null) listener.onProfileSaved(profile); dismiss(); }
+            else Toast.makeText(requireContext(), "Could not save Profile", Toast.LENGTH_LONG).show();
+        });
+    }
+    @Override public void onSaveInstanceState(@NonNull Bundle state) {
+        super.onSaveInstanceState(state);
+        if (profile != null && name != null) {
+            try { readFields(); state.putString("draft", profile.toJson().toString()); }
+            catch (Exception ignored) { /* Invalid draft is not persisted as a usable profile. */ }
         }
     }
 }

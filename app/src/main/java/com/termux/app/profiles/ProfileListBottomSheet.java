@@ -88,8 +88,8 @@ public class ProfileListBottomSheet extends BottomSheetDialogFragment {
 
             @Override
             public void onSetDefaultClick(Profile profile) {
-                ProfileManager.getInstance(requireContext()).setDefaultProfile(profile.getId());
-                refreshProfiles();
+                ProfileManager.getInstance(requireContext()).setDefaultProfile(
+                    getViewLifecycleOwner(), profile.getId(), success -> refreshProfiles());
             }
         });
 
@@ -110,15 +110,19 @@ public class ProfileListBottomSheet extends BottomSheetDialogFragment {
         });
     }
 
-    private void refreshProfiles() {
+    public void refreshProfiles() {
+        if (getView() == null) return;
         ProfileManager profileManager = ProfileManager.getInstance(requireContext());
-        adapter.setProfiles(profileManager.getProfiles());
-        adapter.setDefaultProfileId(profileManager.getDefaultProfile().getId());
+        profileManager.snapshot(getViewLifecycleOwner(), snapshot -> {
+            adapter.setProfiles(snapshot.profiles());
+            adapter.setDefaultProfileId(snapshot.defaultId);
+        });
     }
 
     @Override
     public void onStart() {
         super.onStart();
+        refreshProfiles();
         // 设置底部弹窗高度为屏幕的70%
         View view = getView();
         if (view != null) {
