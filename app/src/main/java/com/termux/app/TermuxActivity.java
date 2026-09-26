@@ -613,7 +613,8 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             @Override
             public void onProfileSelected(com.termux.app.profiles.Profile profile) {
                 // Create new session with selected profile
-                createSessionWithProfile(profile);
+                com.termux.app.profiles.ProfileManager.getInstance(TermuxActivity.this)
+                    .resolveForLaunch(TermuxActivity.this, profile.getId(), TermuxActivity.this::createSessionWithProfile);
             }
 
             @Override
@@ -632,7 +633,7 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             public void onProfileDelete(com.termux.app.profiles.Profile profile) {
                 // Delete profile
                 com.termux.app.profiles.ProfileManager.getInstance(TermuxActivity.this)
-                    .deleteProfile(profile.getId());
+                    .deleteProfile(TermuxActivity.this, profile.getId(), success -> {});
             }
         });
         bottomSheet.show(getSupportFragmentManager(), "profile_list");
@@ -646,7 +647,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
             editor = com.termux.app.profiles.ProfileEditorFragment.newInstance();
         }
         editor.setOnProfileSavedListener(savedProfile -> {
-            // Profile saved, refresh list if needed
+            androidx.fragment.app.Fragment list = getSupportFragmentManager().findFragmentByTag("profile_list");
+            if (list instanceof com.termux.app.profiles.ProfileListBottomSheet)
+                ((com.termux.app.profiles.ProfileListBottomSheet) list).refreshProfiles();
         });
         editor.show(getSupportFragmentManager(), "profile_editor");
     }
@@ -654,7 +657,9 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
     private void createSessionWithProfile(com.termux.app.profiles.Profile profile) {
         if (profile == null) {
             // Use default profile
-            profile = com.termux.app.profiles.ProfileManager.getInstance(this).getDefaultProfile();
+            new AlertDialog.Builder(this).setMessage("Choose or create a Profile first")
+                .setPositiveButton(android.R.string.ok, null).show();
+            return;
         }
 
         TermuxService service = getTermuxService();
@@ -671,8 +676,17 @@ public final class TermuxActivity extends AppCompatActivity implements ServiceCo
         }
 
         // Build execution command from profile
-        com.termux.shared.shell.command.ExecutionCommand command =
-            com.termux.app.profiles.ProfileSessionHelper.buildExecutionCommand(profile);
+        com.termux.shared.shell.command.ExecutionCommand command;
+        try {
+            command = com.termux.app.profiles.ProfileSessionHelper.buildExecutionCommand(profile);
+        } catch (IllegalArgumentException error) {
+            new AlertDialog.Builder(this)
+                .setTitle("Invalid profile arguments")
+                .setMessage(error.getMessage())
+                .setPositiveButton(android.R.string.ok, null)
+                .show();
+            return;
+        }
 
         // Set required fields for terminal session
         command.runner = com.termux.shared.shell.command.ExecutionCommand.Runner.TERMINAL_SESSION.getName();

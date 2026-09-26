@@ -227,6 +227,43 @@ Users must post complete report (optionally without sensitive info) when reporti
 
 ## For Maintainers and Contributors
 
+### Profile threading
+
+Profiles are named presets referencing a read-only Local, SSH Host alias, or installed
+Proot connection. Multiple presets may reference the same connection. Only the target
+working directory, supplemental environment variables and startup command are editable.
+Environment variables already present (including empty values) are preserved. A startup
+command ends the session with its exit status; without one, an interactive shell opens.
+Directory failures terminate startup instead of silently falling back.
+
+SSH options remain in `~/.ssh/config`; the app never writes that file. Discovery lists
+explicit Host aliases from this file (not wildcard patterns or Include-only aliases).
+Proot discovery reads installed-rootfs and containers/rootfs layouts, never the catalog
+of installable distributions. Refreshing or launching rechecks availability; missing
+connections leave presets intact for rebinding. The new model uses `presets-v2.json`;
+old data is not migrated, loaded or deleted.
+
+Target-side extensions require a POSIX `/bin/sh` on SSH/Proot targets. SSH does not
+override RequestTTY or other config options; configure the Host appropriately for
+interactive remote programs. Environment values and paths are literal, while the
+startup command is explicitly executed as shell code.
+
+Profile UI code must use the asynchronous, lifecycle-bound methods on
+`ProfileManager`. `ProfileHost` initializes storage and serializes loading,
+mutations, persistence and distro detection on an application-owned background
+queue. Do not call `ProfileRepository` or `ProfileStorageManager` from UI callbacks.
+Snapshots and editor values are detached copies; modifying an editor does not
+change stored state until an explicit save. Results are delivered only to active
+lifecycle owners and detached when the owner is destroyed. Already queued writes
+belong to the application and finish even if the initiating screen is closed.
+
+Run the deterministic host tests with
+`./gradlew :app:testDebugUnitTest --tests com.termux.app.profiles.ProfileHostTest`.
+
+For opt-in physical-device checks using a real SSH Docker server in QEMU Alpine
+and an Ubuntu Proot guest, see [Profile device tests](scripts/profile-device/README.md).
+The PowerShell runner holds the shared device lock and preserves existing app data.
+
 The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of the Termux app and its plugins. It was created to allow for the removal of all hardcoded paths in the Termux app. Some of the termux plugins are using this as well and rest will in future. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will/should not** be accepted. Termux app and plugin specific classes must be added under `com.termux.shared.termux` package and general classes outside it. The [`termux-shared` `LICENSE`](termux-shared/LICENSE.md) must also be checked and updated if necessary when contributing code. The licenses of any external library or code must be honoured.
 
 The main Termux constants are defined by [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) class. It also contains information on how to fork Termux or build it with your own package name. Changing the package name will require building the bootstrap zip packages and other packages with the new `$PREFIX`, check [Building Packages](https://github.com/termux/termux-packages/wiki/Building-packages) for more info.

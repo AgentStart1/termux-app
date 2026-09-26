@@ -68,6 +68,15 @@ public abstract class ArgumentTokenizer {
      * @return A list of parsed and properly escaped arguments.
      */
     public static List<String> tokenize(String arguments, boolean stringify) {
+        return tokenize(arguments, stringify, false);
+    }
+
+    /** Parse editable arguments without silently accepting unfinished quotes or escapes. */
+    public static List<String> tokenizeStrict(String arguments) {
+        return tokenize(arguments, false, true);
+    }
+
+    private static List<String> tokenize(String arguments, boolean stringify, boolean strict) {
 
         LinkedList<String> argList = new LinkedList<String>();
         StringBuilder currArg = new StringBuilder();
@@ -102,6 +111,9 @@ public abstract class ArgumentTokenizer {
                         else if (c == '\\') {
                             // Look ahead, and only escape quotes or backslashes
                             i++;
+                            if (i == len) {
+                                throw new IllegalArgumentException("Unfinished escape in quoted arguments");
+                            }
                             char next = arguments.charAt(i);
                             if (next == '"' || next == '\\') {
                                 currArg.append(next);
@@ -166,6 +178,10 @@ public abstract class ArgumentTokenizer {
                         throw new IllegalStateException("ArgumentTokenizer state " + state + " is invalid!");
                 }
             }
+        }
+
+        if (strict && (escaped || state == SINGLE_QUOTE_STATE || state == DOUBLE_QUOTE_STATE)) {
+            throw new IllegalArgumentException("Unclosed quote or unfinished escape in extra arguments");
         }
 
         // If we're still escaped, put in the backslash
