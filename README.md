@@ -1,4 +1,6 @@
-# Termux application
+<a id="termux-application"></a>
+
+# Termux 应用
 
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
 [![Testing status](https://github.com/termux/termux-app/workflows/Unit%20tests/badge.svg)](https://github.com/termux/termux-app/actions)
@@ -7,36 +9,40 @@
 [![Termux library releases at Jitpack](https://jitpack.io/v/termux/termux-app.svg)](https://jitpack.io/#termux/termux-app)
 
 
-[Termux](https://termux.dev) is an Android terminal application and Linux environment.
 
-Note that this repository is for the app itself (the user interface and the terminal emulation). For the packages installable inside the app, see [termux/termux-packages](https://github.com/termux/termux-packages).
+[Termux](https://termux.dev) 是 Android 终端应用和 Linux 环境。
 
-Quick how-to about Termux package management is available at [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management). It also has info on how to fix **`repository is under maintenance or down`** errors when running `apt` or `pkg` commands.
+本仓库维护应用本身，包括用户界面和终端模拟。应用内可安装的软件包见 [termux/termux-packages](https://github.com/termux/termux-packages)。
 
-**We are looking for Termux Android application maintainers.**
+Termux 包管理的简要说明见 [Package Management](https://github.com/termux/termux-packages/wiki/Package-Management)，其中也说明了运行 `apt` 或 `pkg` 时，如何处理 **`repository is under maintenance or down`** 错误。
 
-***
-
-**NOTICE: Termux may be unstable on Android 12+.** Android OS will kill any (phantom) processes greater than 32 (limit is for all apps combined) and also kill any processes using excessive CPU. You may get `[Process completed (signal 9) - press Enter]` message in the terminal without actually exiting the shell process yourself. Check the related issue [#2366](https://github.com/termux/termux-app/issues/2366), [issue tracker](https://issuetracker.google.com/u/1/issues/205156966), [phantom cached and empty processes docs](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md) and [this TLDR comment](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220) on how to disable trimming of phantom and excessive cpu usage processes. A proper docs page will be added later. An option to disable the killing should be available in Android 12L or 13, so upgrade at your own risk if you are on Android 11, specially if you are not rooted.
+**我们正在寻找 Termux Android 应用维护者。**
 
 ***
 
-## Contents
-- [Termux App and Plugins](#termux-app-and-plugins)
-- [Installation](#installation)
-- [Uninstallation](#uninstallation)
-- [Important Links](#important-links)
-- [Debugging](#debugging)
-- [For Maintainers and Contributors](#for-maintainers-and-contributors)
-- [Forking](#forking)
-- [Sponsors and Funders](#sponsors-and-funders)
+**注意：Termux 在 Android 12+ 上可能不稳定。** Android 会终止超过 32 个的 phantom 进程（所有应用合计的上限），也会终止 CPU 使用过高的进程。即使没有主动退出 shell，也可能在终端看到 `[Process completed (signal 9) - press Enter]`。有关关闭 phantom 进程和高 CPU 进程裁剪的方法，参见相关 [#2366](https://github.com/termux/termux-app/issues/2366)、[问题跟踪](https://issuetracker.google.com/u/1/issues/205156966)、[phantom、cached 和 empty 进程文档](https://github.com/agnostic-apollo/Android-Docs/blob/master/en/docs/apps/processes/phantom-cached-and-empty-processes.md)，以及[简要说明](https://github.com/termux/termux-app/issues/2366#issuecomment-1237468220)。后续会补充正式文档页。Android 12L 或 13 应提供关闭此终止机制的选项；仍在 Android 11，尤其未 root 的用户，请自行评估升级风险。
+
+***
+
+<a id="contents"></a>
+
+## 目录
+
+- [Termux 应用与插件](#termux-app-and-plugins)
+- [安装](#installation)
+- [卸载](#uninstallation)
+- [重要链接](#important-links)
+- [调试](#debugging)
+- [维护者与贡献者](#for-maintainers-and-contributors)
+- [创建 Fork](#forking)
+- [赞助方与资助方](#sponsors-and-funders)
 ##
 
+<a id="termux-app-and-plugins"></a>
 
+## Termux 应用与插件
 
-## Termux App and Plugins
-
-The core [Termux](https://github.com/termux/termux-app) app comes with the following optional plugin apps.
+核心 [Termux](https://github.com/termux/termux-app) 应用可配合以下可选插件应用使用：
 
 - [Termux:API](https://github.com/termux/termux-api)
 - [Termux:Boot](https://github.com/termux/termux-boot)
@@ -46,54 +52,54 @@ The core [Termux](https://github.com/termux/termux-app) app comes with the follo
 - [Termux:Widget](https://github.com/termux/termux-widget)
 ##
 
+<a id="installation"></a>
 
+## 安装
 
-## Installation
+最新版本为 `v0.118.3`。
 
-Latest version is `v0.118.3`.
+**注意：强烈建议尽快更新到 `v0.118.0` 或更新版本，以获得多项缺陷修复，包括[此处披露](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html)的严重全局可读漏洞。Google Play 上的 Termux 信息见[下文](#google-play-store-experimental-branch)。**
 
-**NOTICE: It is highly recommended that you update to `v0.118.0` or higher ASAP for various bug fixes, including a critical world-readable vulnerability reported [here](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html). See [below](#google-play-store-experimental-branch) for information regarding Termux on Google Play.**
+可通过下列来源获取 Termux；只有 Android `>= 7` 获得应用和软件包的完整支持。
 
-Termux can be obtained through various sources listed below for **only** Android `>= 7` with full support for apps and packages.
+Android `5` 和 `6` 的应用及软件包支持在 [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) 的 `v0.83` 中终止，随后在 [2022-05-24](https://github.com/termux/termux-app/pull/2740) 通过 [GitHub](#github) 来源恢复了仅应用支持，*不支持软件包更新*。详情见[这里](https://github.com/termux/termux-app/wiki/Termux-on-android-5-or-6)。
 
-Support for both app and packages was dropped for Android `5` and `6` on [2020-01-01](https://www.reddit.com/r/termux/comments/dnzdbs/end_of_android56_support_on_20200101/) at `v0.83`, however it was re-added just for the app *without any support for package updates* on [2022-05-24](https://github.com/termux/termux-app/pull/2740) via the [GitHub](#github) sources. Check [here](https://github.com/termux/termux-app/wiki/Termux-on-android-5-or-6) for the details.
+不同来源的 APK 使用不同签名密钥。`Termux` 应用和全部插件共用 [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux`，因此设备上的所有相关 APK 必须使用同一密钥签名，才能协同工作，也就必须从同一来源安装。不要混用来源，例如一个应用或插件来自 `F-Droid`，另一个来自 `GitHub`。Android 包管理器通常也不允许安装签名不同的 APK，会提示 `App not installed`、`Failed to install due to an unknown error`、`INSTALL_FAILED_UPDATE_INCOMPATIBLE`、`INSTALL_FAILED_SHARED_USER_INCOMPATIBLE` 或 `signatures do not match previously installed version` 等错误。Root 或自定义 ROM 可绕过此限制。
 
-The APK files of different sources are signed with different signature keys. The `Termux` app and all its plugins use the same [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux` and so all their APKs installed on a device must have been signed with the same signature key to work together and so they must all be installed from the same source. Do not attempt to mix them together, i.e do not try to install an app or plugin from `F-Droid` and another one from a different source like `GitHub`. Android Package Manager will also normally not allow installation of APKs with different signatures and you will get errors on installation like `App not installed`, `Failed to install due to an unknown error`, `INSTALL_FAILED_UPDATE_INCOMPATIBLE`, `INSTALL_FAILED_SHARED_USER_INCOMPATIBLE`, `signatures do not match previously installed version`, etc. This restriction can be bypassed with root or with custom roms.
+若要改用其他来源，必须先从设备**卸载全部已有 Termux 和插件应用 APK**，再从同一个新来源安装所有 APK。详情见[卸载](#uninstallation)。卸载前也可考虑[备份 Termux](https://wiki.termux.dev/wiki/Backing_up_Termux)，以便从其他来源重新安装后恢复。
 
-If you wish to install from a different source, then you must **uninstall any and all existing Termux or its plugin app APKs** from your device first, then install all new APKs from the same new source. Check [Uninstallation](#uninstallation) section for details. You may also want to consider [Backing up Termux](https://wiki.termux.dev/wiki/Backing_up_Termux) before the uninstallation so that you can restore it after re-installing from Termux different source.
-
-In the following paragraphs, *"bootstrap"* refers to the minimal packages that are shipped with the `termux-app` itself to start a working shell environment. Its zips are built and released [here](https://github.com/termux/termux-packages/releases).
+下文的 *bootstrap* 指 `termux-app` 自带、用于启动可用 shell 环境的最小软件包集合。其 ZIP 在[此处](https://github.com/termux/termux-packages/releases)构建和发布。
 
 ### F-Droid
 
-Termux application can be obtained from `F-Droid` from [here](https://f-droid.org/en/packages/com.termux/).
+可从 [F-Droid](https://f-droid.org/en/packages/com.termux/) 获取 Termux 应用。
 
-You **do not** need to download the `F-Droid` app (via the `Download F-Droid` link) to install Termux. You can download the Termux APK directly from the site by clicking the `Download APK` link at the bottom of each version section.
+安装 Termux **不需要**通过 `Download F-Droid` 下载 F-Droid 应用。可点击每个版本区域底部的 `Download APK`，直接从网站下载 Termux APK。
 
-It usually takes a few days (or even a week or more) for updates to be available on `F-Droid` once an update has been released on `GitHub`. The `F-Droid` releases are built and published by `F-Droid` once they [detect](https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.termux.yml) a new `GitHub` release. The Termux maintainers **do not** have any control over the building and publishing of the Termux apps on `F-Droid`. Moreover, the Termux maintainers also do not have access to the APK signing keys of `F-Droid` releases, so we cannot release an APK ourselves on `GitHub` that would be compatible with `F-Droid` releases.
+`GitHub` 发布更新后，通常需要几天，甚至一周或更久，才会在 `F-Droid` 提供。`F-Droid` [检测到](https://gitlab.com/fdroid/fdroiddata/-/blob/master/metadata/com.termux.yml)新的 GitHub 版本后，自行构建和发布。Termux 维护者**无法控制** F-Droid 上 Termux 应用的构建和发布，也无法访问 F-Droid 发布版的 APK 签名密钥，因此不能自行在 GitHub 发布与 F-Droid 版本兼容的 APK。
 
-The `F-Droid` app often may not notify you of updates and you will manually have to do a pull down swipe action in the `Updates` tab of the app for it to check updates. Make sure battery optimizations are disabled for the app, check https://dontkillmyapp.com/ for details on how to do that.
+F-Droid 应用可能不主动通知更新，需要在 `Updates` 标签页手动下拉刷新，才能检查更新。请确保对它关闭电池优化；操作方法见 https://dontkillmyapp.com/。
 
-Only a universal APK is released, which will work on all supported architectures. The APK and bootstrap installation size will be `~180MB`. `F-Droid` does [not support](https://github.com/termux/termux-app/pull/1904) architecture specific APKs.
+只发布通用 APK，适用于全部支持的架构。APK 和 bootstrap 安装大小约为 `~180MB`。F-Droid [不支持](https://github.com/termux/termux-app/pull/1904)按架构发布 APK。
 
 ### GitHub
 
-Termux application can be obtained on `GitHub` either from [`GitHub Releases`](https://github.com/termux/termux-app/releases) for version `>= 0.118.0` or from [`GitHub Build Action`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml?query=branch%3Amaster+event%3Apush) workflows. **For android `>= 7`, only install `apt-android-7` variants. For android `5` and `6`, only install `apt-android-5` variants.**
+GitHub 上可通过 [`GitHub Releases`](https://github.com/termux/termux-app/releases) 获取 `>= 0.118.0` 的版本，也可通过 [`GitHub Build Action`](https://github.com/termux/termux-app/actions/workflows/debug_build.yml?query=branch%3Amaster+event%3Apush) 工作流获取。**Android `>= 7` 只安装 `apt-android-7` 变体；Android `5` 和 `6` 只安装 `apt-android-5` 变体。**
 
-The APKs for `GitHub Releases` will be listed under `Assets` drop-down of a release. These are automatically attached when a new version is released.
+`GitHub Releases` 的 APK 位于对应版本的 `Assets` 下拉区，新版本发布时自动附加。
 
-The APKs for `GitHub Build` action workflows will be listed under `Artifacts` section of a workflow run. These are created for each commit/push done to the repository and can be used by users who don't want to wait for releases and want to try out the latest features immediately or want to test their pull requests. Note that for action workflows, you need to be [**logged into a `GitHub` account**](https://github.com/login) for the `Artifacts` links to be enabled/clickable. If you are using the [`GitHub` app](https://github.com/mobile), then make sure to open workflow link in a browser like Chrome or Firefox that has your GitHub account logged in since the in-app browser may not be logged in.
+`GitHub Build` 工作流的 APK 位于运行页的 `Artifacts` 区。仓库每次提交或推送都会生成，适合不想等待正式发布、想立即试用最新功能，或测试自己 pull request 的用户。工作流的 artifact 链接只有在[**登录 GitHub 账户**](https://github.com/login)后才可点击。如果使用 [`GitHub` 应用](https://github.com/mobile)，请用已登录 GitHub 的 Chrome 或 Firefox 等浏览器打开工作流链接，因为应用内浏览器可能未登录。
 
-The APKs for both of these are [`debuggable`](https://developer.android.com/studio/debug) and are compatible with each other but they are not compatible with other sources.
+这两种 APK 均为 [`debuggable`](https://developer.android.com/studio/debug)，彼此兼容，但与其他来源不兼容。
 
-Both universal and architecture specific APKs are released. The APK and bootstrap installation size will be `~180MB` if using universal and `~120MB` if using architecture specific. Check [here](https://github.com/termux/termux-app/issues/2153) for details.
+同时发布通用 APK 和架构专用 APK。通用 APK 加 bootstrap 安装大小约 `~180MB`，架构专用版本约 `~120MB`，详情见[这里](https://github.com/termux/termux-app/issues/2153)。
 
-**Security warning**: APK files on GitHub are signed with a test key that has been [shared with community](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks). This IS NOT an official developer key and everyone can use it to generate releases for own testing. Be very careful when using Termux GitHub builds obtained elsewhere except https://github.com/termux/termux-app. Everyone is able to use it to forge a malicious Termux update installable over the GitHub build. Think twice about installing Termux builds distributed via Telegram or other social media. If your device get caught by malware, we will not be able to help you.
+**安全警告**：GitHub APK 使用[向社区公开](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks)的测试密钥签名。它不是官方开发者密钥，任何人都能用它生成自己的测试版本。使用并非来自 https://github.com/termux/termux-app 的 GitHub 构建时必须谨慎。任何人都可以用该密钥伪造恶意更新，并覆盖安装到 GitHub 构建上。安装通过 Telegram 或其他社交媒体分发的 Termux 构建前，请仔细考虑。如果设备感染恶意软件，我们无法提供帮助。
 
-The [test key](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks) shall not be used to impersonate @termux and can't be used for this anyway. This key is not trusted by us and it is quite easy to detect its use in user generated content.
+[测试密钥](https://github.com/termux/termux-app/blob/master/app/testkey_untrusted.jks) 不得用于冒充 @termux，它也无法实现这一目的。我们不信任此密钥，在用户生成内容中识别其使用也很容易。
 
 <details>
-<summary>Keystore information</summary>
+<summary>密钥库信息</summary>
 
 ```
 Alias name: alias
@@ -115,166 +121,158 @@ Version: 3
 
 </details>
 
-### Google Play Store **(Experimental branch)**
+<a id="google-play-store-experimental-branch"></a>
 
-There is currently a build of Termux available on Google Play for Android 11+ devices, with extensive adjustments in order to pass policy requirements there. This is under development and has missing functionality and bugs (see [here](https://github.com/termux-play-store/) for status updates) compared to the stable F-Droid build, which is why most users who can should still use F-Droid or GitHub build as mentioned above.
+### Google Play Store **（实验分支）**
 
-Currently, Google Play will try to update installations away from F-Droid ones. Updating will still fail as [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element#uid) has been removed. A planned 0.118.1 F-Droid release will fix this by setting a higher version code than used for the PlayStore app. Meanwhile, to prevent Google Play from attempting to download and then fail to install the Google Play releases over existing installations, you can open the Termux apps pages on Google Play and then click on the 3 dots options button in the top right and then disable the Enable auto update toggle. However, the Termux apps updates will still show in the PlayStore app updates list.
+Google Play 当前为 Android 11+ 设备提供 Termux 构建，为通过其政策要求进行了大量调整。此版本仍在开发，与稳定的 F-Droid 构建相比，存在功能缺失和缺陷（状态更新见[这里](https://github.com/termux-play-store/)），因此大多数具备条件的用户仍应使用前述 F-Droid 或 GitHub 构建。
 
-If you want to help out with testing the Google Play build (or cannot install Termux from other sources), be aware that it's built from a separate repository (https://github.com/termux-play-store/) - be sure to report issues [there](https://github.com/termux-play-store/termux-issues/issues/new/choose), as any issues encountered might very well be specific to that repository.
+Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUserId](https://developer.android.com/guide/topics/manifest/manifest-element#uid)，更新仍会失败。计划中的 0.118.1 F-Droid 发布会使用比 PlayStore 应用更高的 version code 来修复此问题。在此之前，为避免 Google Play 尝试下载并覆盖现有安装后失败，可以打开 Google Play 的 Termux 应用页，点击右上角三点菜单，关闭 Enable auto update。不过 Termux 更新仍会显示在 PlayStore 应用更新列表中。
 
-## Uninstallation
+如果希望帮助测试 Google Play 构建，或无法从其他来源安装 Termux，请注意它来自[独立仓库](https://github.com/termux-play-store/)。遇到的问题很可能仅属于该仓库，请在[那里](https://github.com/termux-play-store/termux-issues/issues/new/choose)反馈。
 
-Uninstallation may be required if a user doesn't want Termux installed in their device anymore or is switching to a different [install source](#installation). You may also want to consider [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux) before the uninstallation.
+<a id="uninstallation"></a>
 
-To uninstall Termux completely, you must uninstall **any and all existing Termux or its plugin app APKs** listed in [Termux App and Plugins](#termux-app-and-plugins).
+## 卸载
 
-Go to `Android Settings` -> `Applications` and then look for those apps. You can also use the search feature if it’s available on your device and search `termux` in the applications list.
+不再希望设备安装 Termux，或准备切换[安装来源](#installation)时，可能需要卸载。卸载前也可考虑[备份 Termux](https://wiki.termux.com/wiki/Backing_up_Termux)。
 
-Even if you think you have not installed any of the plugins, it's strongly suggested to go through the application list in Android settings and double-check.
+完整卸载 Termux，必须卸载 [Termux 应用与插件](#termux-app-and-plugins) 中列出的**全部已有 Termux 和插件应用 APK**。
+
+打开 `Android Settings` → `Applications`，找到这些应用。设备支持搜索时，也可在应用列表搜索 `termux`。
+
+即使认为自己没有安装插件，也强烈建议在 Android 设置的应用列表中逐一确认。
 ##
 
+<a id="important-links"></a>
 
+## 重要链接
 
-## Important Links
+<a id="community"></a>
 
-### Community
-All community links are available [here](https://wiki.termux.com/wiki/Community).
+### 社区
 
-The main ones are the following.
+全部社区链接见[这里](https://wiki.termux.com/wiki/Community)。主要链接如下：
 
-- [Termux Reddit community](https://reddit.com/r/termux)
-- [Termux User Matrix Channel](https://matrix.to/#/#termux_termux:gitter.im) ([Gitter](https://gitter.im/termux/termux))
-- [Termux Dev Matrix Channel](https://matrix.to/#/#termux_dev:gitter.im) ([Gitter](https://gitter.im/termux/dev))
+- [Termux Reddit 社区](https://reddit.com/r/termux)
+- [Termux 用户 Matrix 频道](https://matrix.to/#/#termux_termux:gitter.im)（[Gitter](https://gitter.im/termux/termux)）
+- [Termux 开发者 Matrix 频道](https://matrix.to/#/#termux_dev:gitter.im)（[Gitter](https://gitter.im/termux/dev)）
 - [Termux X (Twitter)](https://twitter.com/termuxdevs)
-- [Termux Support Email](mailto:support@termux.dev)
+- [Termux 支持邮箱](mailto:support@termux.dev)
 
-### Wikis
+<a id="wikis"></a>
+
+### Wiki
 
 - [Termux Wiki](https://wiki.termux.com/wiki/)
 - [Termux App Wiki](https://github.com/termux/termux-app/wiki)
 - [Termux Packages Wiki](https://github.com/termux/termux-packages/wiki)
 
-### Miscellaneous
-- [FAQ](https://wiki.termux.com/wiki/FAQ)
-- [Termux File System Layout](https://github.com/termux/termux-packages/wiki/Termux-file-system-layout)
-- [Differences From Linux](https://wiki.termux.com/wiki/Differences_from_Linux)
-- [Package Management](https://wiki.termux.com/wiki/Package_Management)
-- [Remote Access](https://wiki.termux.com/wiki/Remote_Access)
-- [Backing up Termux](https://wiki.termux.com/wiki/Backing_up_Termux)
-- [Terminal Settings](https://wiki.termux.com/wiki/Terminal_Settings)
-- [Touch Keyboard](https://wiki.termux.com/wiki/Touch_Keyboard)
-- [Android Storage and Sharing Data with Other Apps](https://wiki.termux.com/wiki/Internal_and_external_storage)
-- [Android APIs](https://wiki.termux.com/wiki/Termux:API)
-- [Moved Termux Packages Hosting From Bintray to IPFS](https://github.com/termux/termux-packages/issues/6348)
-- [Running Commands in Termux From Other Apps via `RUN_COMMAND` intent](https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent)
-- [Termux and Android 10](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10)
+<a id="miscellaneous"></a>
 
+### 其他资料
 
-### Terminal
+- [常见问题](https://wiki.termux.com/wiki/FAQ)
+- [Termux 文件系统布局](https://github.com/termux/termux-packages/wiki/Termux-file-system-layout)
+- [与 Linux 的差异](https://wiki.termux.com/wiki/Differences_from_Linux)
+- [包管理](https://wiki.termux.com/wiki/Package_Management)
+- [远程访问](https://wiki.termux.com/wiki/Remote_Access)
+- [备份 Termux](https://wiki.termux.com/wiki/Backing_up_Termux)
+- [终端设置](https://wiki.termux.com/wiki/Terminal_Settings)
+- [触摸键盘](https://wiki.termux.com/wiki/Touch_Keyboard)
+- [Android 存储及与其他应用共享数据](https://wiki.termux.com/wiki/Internal_and_external_storage)
+- [Android API](https://wiki.termux.com/wiki/Termux:API)
+- [Termux 软件包托管从 Bintray 迁移到 IPFS](https://github.com/termux/termux-packages/issues/6348)
+- [其他应用通过 `RUN_COMMAND` intent 在 Termux 中运行命令](https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent)
+- [Termux 与 Android 10](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10)
+
+<a id="terminal"></a>
+
+### 终端
 
 <details>
 <summary></summary>
 
-### Terminal resources
+<a id="terminal-resources"></a>
 
-- [XTerm control sequences](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
+### 终端资料
+
+- [XTerm 控制序列](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
 - [vt100.net](https://vt100.net/)
-- [Terminal codes (ANSI and terminfo equivalents)](https://wiki.bash-hackers.org/scripting/terminalcodes)
+- [终端代码：ANSI 与 terminfo 对应关系](https://wiki.bash-hackers.org/scripting/terminalcodes)
 
-### Terminal emulators
+<a id="terminal-emulators"></a>
 
-- VTE (libvte): Terminal emulator widget for GTK+, mainly used in gnome-terminal. [Source](https://github.com/GNOME/vte), [Open Issues](https://bugzilla.gnome.org/buglist.cgi?quicksearch=product%3A%22vte%22+), and [All (including closed) issues](https://bugzilla.gnome.org/buglist.cgi?bug_status=RESOLVED&bug_status=VERIFIED&chfield=resolution&chfieldfrom=-2000d&chfieldvalue=FIXED&product=vte&resolution=FIXED).
+### 终端模拟器
 
-- iTerm 2: OS X terminal application. [Source](https://github.com/gnachman/iTerm2), [Issues](https://gitlab.com/gnachman/iterm2/issues) and [Documentation](https://iterm2.com/documentation.html) (which includes [iTerm2 proprietary escape codes](https://iterm2.com/documentation-escape-codes.html)).
-
-- Konsole: KDE terminal application. [Source](https://projects.kde.org/projects/kde/applications/konsole/repository), in particular [tests](https://projects.kde.org/projects/kde/applications/konsole/repository/revisions/master/show/tests), [Bugs](https://bugs.kde.org/buglist.cgi?bug_severity=critical&bug_severity=grave&bug_severity=major&bug_severity=crash&bug_severity=normal&bug_severity=minor&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=konsole) and [Wishes](https://bugs.kde.org/buglist.cgi?bug_severity=wishlist&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=konsole).
-
-- hterm: JavaScript terminal implementation from Chromium. [Source](https://github.com/chromium/hterm), including [tests](https://github.com/chromium/hterm/blob/master/js/hterm_vt_tests.js), and [Google group](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm).
-
-- xterm: The grandfather of terminal emulators. [Source](https://invisible-island.net/datafiles/release/xterm.tar.gz).
-
-- Connectbot: Android SSH client. [Source](https://github.com/connectbot/connectbot)
-
-- Android Terminal Emulator: Android terminal app which Termux terminal handling is based on. Inactive. [Source](https://github.com/jackpal/Android-Terminal-Emulator).
+- VTE（libvte）：GTK+ 的终端模拟器控件，主要用于 gnome-terminal。[源码](https://github.com/GNOME/vte)、[未关闭问题](https://bugzilla.gnome.org/buglist.cgi?quicksearch=product%3A%22vte%22+)、[全部问题（含已关闭）](https://bugzilla.gnome.org/buglist.cgi?bug_status=RESOLVED&bug_status=VERIFIED&chfield=resolution&chfieldfrom=-2000d&chfieldvalue=FIXED&product=vte&resolution=FIXED)。
+- iTerm 2：OS X 终端应用。[源码](https://github.com/gnachman/iTerm2)、[问题](https://gitlab.com/gnachman/iterm2/issues)和[文档](https://iterm2.com/documentation.html)，其中包含 [iTerm2 专用转义代码](https://iterm2.com/documentation-escape-codes.html)。
+- Konsole：KDE 终端应用。[源码](https://projects.kde.org/projects/kde/applications/konsole/repository)，尤其是[测试](https://projects.kde.org/projects/kde/applications/konsole/repository/revisions/master/show/tests)、[缺陷](https://bugs.kde.org/buglist.cgi?bug_severity=critical&bug_severity=grave&bug_severity=major&bug_severity=crash&bug_severity=normal&bug_severity=minor&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=konsole)和[功能愿望](https://bugs.kde.org/buglist.cgi?bug_severity=wishlist&bug_status=UNCONFIRMED&bug_status=NEW&bug_status=ASSIGNED&bug_status=REOPENED&product=konsole)。
+- hterm：来自 Chromium 的 JavaScript 终端实现。[源码](https://github.com/chromium/hterm)，包括[测试](https://github.com/chromium/hterm/blob/master/js/hterm_vt_tests.js)，以及 [Google 讨论组](https://groups.google.com/a/chromium.org/forum/#!forum/chromium-hterm)。
+- xterm：终端模拟器的鼻祖。[源码](https://invisible-island.net/datafiles/release/xterm.tar.gz)。
+- Connectbot：Android SSH 客户端。[源码](https://github.com/connectbot/connectbot)。
+- Android Terminal Emulator：Termux 终端处理的基础，现已停止活跃开发。[源码](https://github.com/jackpal/Android-Terminal-Emulator)。
 </details>
 
 ##
 
+<a id="debugging"></a>
 
+### 调试
 
-### Debugging
+可在 Termux 应用设置 → `<APP_NAME>` → `Debugging` → `Log Level` 中设置合适的 logcat 日志级别，帮助调试 Termux 应用及插件（要求 Termux `>= 0.118.0`）。默认 `Log Level` 为 `Normal`；`Verbose` 当前会记录更多信息。完成调试后，最好恢复为 `Normal`，否则正常操作中的私有数据可能传入 logcat，额外日志也会增加执行耗时。
 
-You can help debug problems of the `Termux` app and its plugins by setting appropriate `logcat` `Log Level` in `Termux` app settings -> `<APP_NAME>` -> `Debugging` -> `Log Level` (Requires `Termux` app version `>= 0.118.0`). The `Log Level` defaults to `Normal` and log level `Verbose` currently logs additional information. Its best to revert log level to `Normal` after you have finished debugging since private data may otherwise be passed to `logcat` during normal operation and moreover, additional logging increases execution time.
+插件应用**不自行执行命令**，而是向 Termux 应用发送执行 intent。Termux 自身有独立日志级别，可在 Termux 应用设置 → `Termux` → `Debugging` → `Log Level` 中配置。因此必须同时为 Termux 和对应插件设置日志级别，才能获得完整信息。
 
-The plugin apps **do not execute the commands themselves** but send execution intents to `Termux` app, which has its own log level which can be set in `Termux` app settings -> `Termux` -> `Debugging` -> `Log Level`. So you must set log level for both `Termux` and the respective plugin app settings to get all the info.
+设置日志级别后，在 Termux 终端运行 `logcat` 可实时查看日志（`Ctrl+c` 停止），也可用 `logcat -d > logcat.txt` 导出日志。还可在 PC 上通过 ADB 查看。更多信息见 [Android 官方 logcat 指南](https://developer.android.com/studio/command-line/logcat)。
 
-Once log levels have been set, you can run the `logcat` command in `Termux` app terminal to view the logs in realtime (`Ctrl+c` to stop) or use `logcat -d > logcat.txt` to take a dump of the log. You can also view the logs from a PC over `ADB`. For more information, check official android `logcat` guide [here](https://developer.android.com/studio/command-line/logcat).
+还可通过终端长按菜单 `More` → `Report Issue`，在添加调试信息的提示中选择 `YES`，自动生成 Termux 文件 stat 信息和 logcat 导出。这也有助于报告和调试其他问题。报告过大时，可在 `ReportActivity` 右上角三点菜单中选择 `Save To File`，再查看或分享文件。
 
-Moreover, users can generate termux files `stat` info and `logcat` dump automatically too with terminal's long hold options menu `More` -> `Report Issue` option and selecting `YES` in the prompt shown to add debug info. This can be helpful for reporting and debugging other issues. If the report generated is too large, then `Save To File` option in context menu (3 dots on top right) of `ReportActivity` can be used and the file viewed/shared instead.
+报告问题时必须提供完整报告，可移除敏感信息。只提供错误报告的部分截图、而非文本的问题，很可能被自动关闭或删除。
 
-Users must post complete report (optionally without sensitive info) when reporting issues. Issues opened with **(partial) screenshots of error reports** instead of text will likely be automatically closed/deleted.
+<a id="log-levels"></a>
 
-##### Log Levels
+##### 日志级别
 
-- `Off` - Log nothing.
-- `Normal` - Start logging error, warn and info messages and stacktraces.
-- `Debug` - Start logging debug messages.
-- `Verbose` - Start logging verbose messages.
+- `Off`：不记录日志。
+- `Normal`：记录 error、warn、info 消息和堆栈。
+- `Debug`：进一步记录 debug 消息。
+- `Verbose`：进一步记录 verbose 消息。
 ##
 
+<a id="for-maintainers-and-contributors"></a>
 
+## 维护者与贡献者
 
-## For Maintainers and Contributors
+<a id="profile-threading"></a>
 
-### Profile threading
+### Profile 线程模型
 
-Profiles are named presets referencing a read-only Local, SSH Host alias, or installed
-Proot connection. Multiple presets may reference the same connection. Only the target
-working directory, supplemental environment variables and startup command are editable.
-Environment variables already present (including empty values) are preserved. A startup
-command ends the session with its exit status; without one, an interactive shell opens.
-Directory failures terminate startup instead of silently falling back.
+Profile 是有名称的预设，引用只读的 Local、SSH Host 别名或已安装 Proot 连接。多个预设可引用同一连接。只允许编辑目标工作目录、补充环境变量和启动命令。保留已存在的环境变量，包括空值。指定启动命令后，会话以其退出状态结束；不指定则打开交互 shell。目录错误会终止启动，不静默回退。
 
-SSH options remain in `~/.ssh/config`; the app never writes that file. Discovery lists
-explicit Host aliases from this file (not wildcard patterns or Include-only aliases).
-Proot discovery reads installed-rootfs and containers/rootfs layouts, never the catalog
-of installable distributions. Refreshing or launching rechecks availability; missing
-connections leave presets intact for rebinding. The new model uses `presets-v2.json`;
-old data is not migrated, loaded or deleted.
+SSH 选项留在 `~/.ssh/config`，应用不写入该文件。发现过程只列出文件中明确的 Host 别名，不列出通配模式或仅通过 Include 引入的别名。Proot 发现读取 installed-rootfs 和 containers/rootfs 布局，不读取可安装发行版目录。刷新或启动时重新检查可用性；连接缺失时保留预设供重新绑定。新模型使用 `presets-v2.json`；旧数据不迁移、不加载，也不删除。
 
-Target-side extensions require a POSIX `/bin/sh` on SSH/Proot targets. SSH does not
-override RequestTTY or other config options; configure the Host appropriately for
-interactive remote programs. Environment values and paths are literal, while the
-startup command is explicitly executed as shell code.
+目标侧扩展要求 SSH/Proot 目标提供 POSIX `/bin/sh`。SSH 不覆盖 RequestTTY 或其他配置选项；交互远程程序所需设置应在 Host 中配置。环境值和路径按字面值处理，启动命令则明确作为 shell 代码执行。
 
-Profile UI code must use the asynchronous, lifecycle-bound methods on
-`ProfileManager`. `ProfileHost` initializes storage and serializes loading,
-mutations, persistence and distro detection on an application-owned background
-queue. Do not call `ProfileRepository` or `ProfileStorageManager` from UI callbacks.
-Snapshots and editor values are detached copies; modifying an editor does not
-change stored state until an explicit save. Results are delivered only to active
-lifecycle owners and detached when the owner is destroyed. Already queued writes
-belong to the application and finish even if the initiating screen is closed.
+Profile UI 必须使用 `ProfileManager` 上与生命周期绑定的异步方法。`ProfileHost` 初始化存储，并在应用管理的后台队列上串行处理加载、修改、持久化和发行版检测。UI 回调不要调用 `ProfileRepository` 或 `ProfileStorageManager`。快照和编辑器值都是独立副本；修改编辑器不会改变已存状态，只有显式保存才生效。结果只交付给仍活动的生命周期管理者，管理者销毁时解除关联。已入队写入由应用管理，即使发起页面关闭仍会完成。
 
-Run the deterministic host tests with
-`./gradlew :app:testDebugUnitTest --tests com.termux.app.profiles.ProfileHostTest`.
+确定性的宿主测试命令为 `./gradlew :app:testDebugUnitTest --tests com.termux.app.profiles.ProfileHostTest`。
 
-For opt-in physical-device checks using a real SSH Docker server in QEMU Alpine
-and an Ubuntu Proot guest, see [Profile device tests](scripts/profile-device/README.md).
-The PowerShell runner holds the shared device lock and preserves existing app data.
+使用 QEMU Alpine 中真实 SSH Docker 服务和 Ubuntu Proot 客体的可选实体设备检查，见 [Profile 设备测试](scripts/profile-device/README.md)。PowerShell 执行器持有共享设备锁，并保留已有应用数据。
 
-The [termux-shared](termux-shared) library was added in [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109). It defines shared constants and utils of the Termux app and its plugins. It was created to allow for the removal of all hardcoded paths in the Termux app. Some of the termux plugins are using this as well and rest will in future. If you are contributing code that is using a constant or a util that may be shared, then define it in `termux-shared` library if it currently doesn't exist and reference it from there. Update the relevant changelogs as well. Pull requests using hardcoded values **will/should not** be accepted. Termux app and plugin specific classes must be added under `com.termux.shared.termux` package and general classes outside it. The [`termux-shared` `LICENSE`](termux-shared/LICENSE.md) must also be checked and updated if necessary when contributing code. The licenses of any external library or code must be honoured.
+[termux-shared](termux-shared) 库在 [`v0.109`](https://github.com/termux/termux-app/releases/tag/v0.109) 加入，定义 Termux 及插件共用的常量和工具，目的是消除 Termux 应用中的全部硬编码路径。部分插件已使用该库，其余未来也会使用。贡献代码需要可能共用的常量或工具时，若尚不存在，应在 termux-shared 中定义并引用，同时更新相关 changelog。使用硬编码值的 pull request **不会／不应被接受**。Termux 应用和插件专用类应放在 `com.termux.shared.termux` 包中，通用类放在其外。贡献代码时还必须检查 [`termux-shared` 的 `LICENSE`](termux-shared/LICENSE.md)，必要时更新。必须尊重任何外部库或代码的许可证。
 
-The main Termux constants are defined by [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) class. It also contains information on how to fork Termux or build it with your own package name. Changing the package name will require building the bootstrap zip packages and other packages with the new `$PREFIX`, check [Building Packages](https://github.com/termux/termux-packages/wiki/Building-packages) for more info.
+主要 Termux 常量由 [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) 定义，也包含 fork Termux 或使用自定义包名构建的说明。修改包名需要使用新的 `$PREFIX` 构建 bootstrap ZIP 和其他软件包，更多信息见[构建软件包](https://github.com/termux/termux-packages/wiki/Building-packages)。
 
-Check [Termux Libraries](https://github.com/termux/termux-app/wiki/Termux-Libraries) for how to import termux libraries in plugin apps and [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for how to update termux libraries for plugins.
+在插件应用中导入 Termux 库的方法见 [Termux Libraries](https://github.com/termux/termux-app/wiki/Termux-Libraries)；更新插件所用 Termux 库的方法见 [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development)。
 
-The `versionName` in `build.gradle` files of Termux and its plugin apps must follow the [semantic version `2.0.0` spec](https://semver.org/spec/v2.0.0.html) in the format `major.minor.patch(-prerelease)(+buildmetadata)`. When bumping `versionName` in `build.gradle` files and when creating a tag for new releases on GitHub, make sure to include the patch number as well, like `v0.1.0` instead of just `v0.1`. The `build.gradle` files and `attach_debug_apks_to_release` workflow validates the version as well and the build/attachment will fail if `versionName` does not follow the spec.
+Termux 及插件 `build.gradle` 中的 `versionName` 必须遵循[语义化版本 2.0.0](https://semver.org/spec/v2.0.0.html)，格式为 `major.minor.patch(-prerelease)(+buildmetadata)`。增加 versionName 或为 GitHub 新版本创建 tag 时，必须包含 patch 数字，例如 `v0.1.0`，而非 `v0.1`。build.gradle 和 `attach_debug_apks_to_release` 工作流也会验证版本，不符合规范时构建或附件上传将失败。
 
-### Commit Messages Guidelines
+<a id="commit-messages-guidelines"></a>
 
-Commit messages **must** use the [Conventional Commits](https://www.conventionalcommits.org) spec so that chagelogs as per the [Keep a Changelog](https://github.com/olivierlacan/keep-a-changelog) spec can automatically be generated by the [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) script, check its repo for further details on the spec. **The first letter for `type` and `description` must be capital and description should be in the present tense.** The space after the colon `:` is necessary. For a breaking change, add an exclamation mark `!` before the colon `:`, so that it is highlighted in the chagelog automatically.
+### 提交信息指南
+
+提交信息**必须**遵循 [Conventional Commits](https://www.conventionalcommits.org)，以便 [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) 自动生成符合 [Keep a Changelog](https://github.com/olivierlacan/keep-a-changelog) 的变更日志；更多规范细节见其仓库。**`type` 和 `description` 首字母必须大写，描述应使用现在时。** 冒号 `:` 后必须有空格。破坏性变更在冒号前添加 `!`，使其在变更日志中自动突出显示。
 
 ```
 <type>[optional scope]: <description>
@@ -284,29 +282,29 @@ Commit messages **must** use the [Conventional Commits](https://www.conventional
 [optional footer(s)]
 ```
 
-**Only the `types` listed below must be used exactly as they are used in the changelog headings.** For example, `Added: Add foo`, `Added|Fixed: Add foo and fix bar`, `Changed!: Change baz as a breaking change`, etc. You can optionally add a scope as well, like `Fixed(terminal): Fix some bug`. **Do not use anything else as type, like `add` instead of `Added`, etc.**
+**只允许使用下面列出的类型，并与 changelog 标题中的写法完全一致。** 例如 `Added: Add foo`、`Added|Fixed: Add foo and fix bar`、`Changed!: Change baz as a breaking change`。也可加可选 scope，例如 `Fixed(terminal): Fix some bug`。**不要使用其他 type，例如不能用 `add` 代替 `Added`。**
 
-- **Added** for new features.
-- **Changed** for changes in existing functionality.
-- **Deprecated** for soon-to-be removed features.
-- **Removed** for now removed features.
-- **Fixed** for any bug fixes.
-- **Security** in case of vulnerabilities.
+- **Added**：新增功能。
+- **Changed**：修改已有功能。
+- **Deprecated**：即将移除的功能。
+- **Removed**：已经移除的功能。
+- **Fixed**：缺陷修复。
+- **Security**：安全漏洞相关变更。
 ##
 
+<a id="forking"></a>
 
+## 创建 Fork
 
-## Forking
-
-- Check [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) javadocs for instructions on what changes to make in the app to change package name.
-- You also need to recompile bootstrap zip for the new package name. Check [building bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives), [here](https://github.com/termux/termux-app/issues/1983) and [here](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111).
-- Currently, not all plugins use `TermuxConstants` from `termux-shared` library and have hardcoded `com.termux` values and will need to be manually patched.
-- If forking termux plugins, check [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development) for info on how to use termux libraries for plugins.
+- 修改应用包名需要的变更，见 [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) 的 Javadoc。
+- 还必须为新包名重新编译 bootstrap ZIP，参见[构建 bootstrap](https://github.com/termux/termux-packages/wiki/For-maintainers#build-bootstrap-archives)、[此问题](https://github.com/termux/termux-app/issues/1983)和[此评论](https://github.com/termux/termux-app/issues/2081#issuecomment-865280111)。
+- 当前并非全部插件都使用 termux-shared 的 TermuxConstants，部分仍硬编码 `com.termux`，需要手动修补。
+- Fork Termux 插件时，使用 Termux 库的方法见 [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development)。
 ##
 
+<a id="sponsors-and-funders"></a>
 
-
-## Sponsors and Funders
+## 赞助方与资助方
 
 [<img alt="GitHub Accelerator" width="25%" src="site/assets/sponsors/github.png" />](https://github.com)  
 *[GitHub Accelerator](https://github.com/accelerator) ([1](https://github.blog/2023-04-12-github-accelerator-our-first-cohort-and-whats-next))*
