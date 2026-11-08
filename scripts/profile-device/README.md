@@ -1,12 +1,8 @@
-<a id="real-profile-backend-checks"></a>
-
 # 真实 Profile 后端检查
 
 这是在专用 debug Termux 设备上执行的可选测试，要求 Android 8/API 26 或更新版本。它在应用 UID 下启动生产 `ProfileSessionHelper` 命令，使用真实 Termux、OpenSSH 和 Ubuntu Proot 进程，**不是**完整 UI 或 PTY 生命周期测试。Local Profile 创建和启动，以及三种基础连接的发现，已另行通过手机 UI 检查。
 
 执行器对每个后端检查两次，覆盖扩展值按字面处理、保留现有 HOME、目标 home 目录、启动退出码 23、另一个引用相同基础连接的预设，以及无效目录短路。不写入真实预设。
-
-<a id="one-time-setup"></a>
 
 ## 一次性准备
 
@@ -29,8 +25,6 @@ Host codex-profile-ssh
     UserKnownHostsFile ~/.ssh/codex-profile-test-known-hosts
     RequestTTY force
 ```
-
-<a id="repeatable-run-powershell-7"></a>
 
 ## 可重复执行（PowerShell 7）
 

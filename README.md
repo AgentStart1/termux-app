@@ -1,5 +1,3 @@
-<a id="termux-application"></a>
-
 # Termux 应用
 
 [![Build status](https://github.com/termux/termux-app/workflows/Build/badge.svg)](https://github.com/termux/termux-app/actions)
@@ -24,21 +22,17 @@ Termux 包管理的简要说明见 [Package Management](https://github.com/termu
 
 ***
 
-<a id="contents"></a>
-
 ## 目录
 
-- [Termux 应用与插件](#termux-app-and-plugins)
-- [安装](#installation)
-- [卸载](#uninstallation)
-- [重要链接](#important-links)
-- [调试](#debugging)
-- [维护者与贡献者](#for-maintainers-and-contributors)
-- [创建 Fork](#forking)
-- [赞助方与资助方](#sponsors-and-funders)
+- [Termux 应用与插件](#termux-应用与插件)
+- [安装](#安装)
+- [卸载](#卸载)
+- [重要链接](#重要链接)
+- [调试](#调试)
+- [维护者与贡献者](#维护者与贡献者)
+- [创建 Fork](#创建-fork)
+- [赞助方与资助方](#赞助方与资助方)
 ##
-
-<a id="termux-app-and-plugins"></a>
 
 ## Termux 应用与插件
 
@@ -52,13 +46,11 @@ Termux 包管理的简要说明见 [Package Management](https://github.com/termu
 - [Termux:Widget](https://github.com/termux/termux-widget)
 ##
 
-<a id="installation"></a>
-
 ## 安装
 
 最新版本为 `v0.118.3`。
 
-**注意：强烈建议尽快更新到 `v0.118.0` 或更新版本，以获得多项缺陷修复，包括[此处披露](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html)的严重全局可读漏洞。Google Play 上的 Termux 信息见[下文](#google-play-store-experimental-branch)。**
+**注意：强烈建议尽快更新到 `v0.118.0` 或更新版本，以获得多项缺陷修复，包括[此处披露](https://termux.github.io/general/2022/02/15/termux-apps-vulnerability-disclosures.html)的严重全局可读漏洞。Google Play 上的 Termux 信息见[下文](#google-play-store-实验分支)。**
 
 可通过下列来源获取 Termux；只有 Android `>= 7` 获得应用和软件包的完整支持。
 
@@ -66,7 +58,7 @@ Android `5` 和 `6` 的应用及软件包支持在 [2020-01-01](https://www.redd
 
 不同来源的 APK 使用不同签名密钥。`Termux` 应用和全部插件共用 [`sharedUserId`](https://developer.android.com/guide/topics/manifest/manifest-element) `com.termux`，因此设备上的所有相关 APK 必须使用同一密钥签名，才能协同工作，也就必须从同一来源安装。不要混用来源，例如一个应用或插件来自 `F-Droid`，另一个来自 `GitHub`。Android 包管理器通常也不允许安装签名不同的 APK，会提示 `App not installed`、`Failed to install due to an unknown error`、`INSTALL_FAILED_UPDATE_INCOMPATIBLE`、`INSTALL_FAILED_SHARED_USER_INCOMPATIBLE` 或 `signatures do not match previously installed version` 等错误。Root 或自定义 ROM 可绕过此限制。
 
-若要改用其他来源，必须先从设备**卸载全部已有 Termux 和插件应用 APK**，再从同一个新来源安装所有 APK。详情见[卸载](#uninstallation)。卸载前也可考虑[备份 Termux](https://wiki.termux.dev/wiki/Backing_up_Termux)，以便从其他来源重新安装后恢复。
+若要改用其他来源，必须先从设备**卸载全部已有 Termux 和插件应用 APK**，再从同一个新来源安装所有 APK。详情见[卸载](#卸载)。卸载前也可考虑[备份 Termux](https://wiki.termux.dev/wiki/Backing_up_Termux)，以便从其他来源重新安装后恢复。
 
 下文的 *bootstrap* 指 `termux-app` 自带、用于启动可用 shell 环境的最小软件包集合。其 ZIP 在[此处](https://github.com/termux/termux-packages/releases)构建和发布。
 
@@ -121,8 +113,6 @@ Version: 3
 
 </details>
 
-<a id="google-play-store-experimental-branch"></a>
-
 ### Google Play Store **（实验分支）**
 
 Google Play 当前为 Android 11+ 设备提供 Termux 构建，为通过其政策要求进行了大量调整。此版本仍在开发，与稳定的 F-Droid 构建相比，存在功能缺失和缺陷（状态更新见[这里](https://github.com/termux-play-store/)），因此大多数具备条件的用户仍应使用前述 F-Droid 或 GitHub 构建。
@@ -131,24 +121,18 @@ Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUse
 
 如果希望帮助测试 Google Play 构建，或无法从其他来源安装 Termux，请注意它来自[独立仓库](https://github.com/termux-play-store/)。遇到的问题很可能仅属于该仓库，请在[那里](https://github.com/termux-play-store/termux-issues/issues/new/choose)反馈。
 
-<a id="uninstallation"></a>
-
 ## 卸载
 
-不再希望设备安装 Termux，或准备切换[安装来源](#installation)时，可能需要卸载。卸载前也可考虑[备份 Termux](https://wiki.termux.com/wiki/Backing_up_Termux)。
+不再希望设备安装 Termux，或准备切换[安装来源](#安装)时，可能需要卸载。卸载前也可考虑[备份 Termux](https://wiki.termux.com/wiki/Backing_up_Termux)。
 
-完整卸载 Termux，必须卸载 [Termux 应用与插件](#termux-app-and-plugins) 中列出的**全部已有 Termux 和插件应用 APK**。
+完整卸载 Termux，必须卸载 [Termux 应用与插件](#termux-应用与插件) 中列出的**全部已有 Termux 和插件应用 APK**。
 
 打开 `Android Settings` → `Applications`，找到这些应用。设备支持搜索时，也可在应用列表搜索 `termux`。
 
 即使认为自己没有安装插件，也强烈建议在 Android 设置的应用列表中逐一确认。
 ##
 
-<a id="important-links"></a>
-
 ## 重要链接
-
-<a id="community"></a>
 
 ### 社区
 
@@ -160,15 +144,11 @@ Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUse
 - [Termux X (Twitter)](https://twitter.com/termuxdevs)
 - [Termux 支持邮箱](mailto:support@termux.dev)
 
-<a id="wikis"></a>
-
 ### Wiki
 
 - [Termux Wiki](https://wiki.termux.com/wiki/)
 - [Termux App Wiki](https://github.com/termux/termux-app/wiki)
 - [Termux Packages Wiki](https://github.com/termux/termux-packages/wiki)
-
-<a id="miscellaneous"></a>
 
 ### 其他资料
 
@@ -186,22 +166,16 @@ Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUse
 - [其他应用通过 `RUN_COMMAND` intent 在 Termux 中运行命令](https://github.com/termux/termux-app/wiki/RUN_COMMAND-Intent)
 - [Termux 与 Android 10](https://github.com/termux/termux-packages/wiki/Termux-and-Android-10)
 
-<a id="terminal"></a>
-
 ### 终端
 
 <details>
 <summary></summary>
-
-<a id="terminal-resources"></a>
 
 ### 终端资料
 
 - [XTerm 控制序列](https://invisible-island.net/xterm/ctlseqs/ctlseqs.html)
 - [vt100.net](https://vt100.net/)
 - [终端代码：ANSI 与 terminfo 对应关系](https://wiki.bash-hackers.org/scripting/terminalcodes)
-
-<a id="terminal-emulators"></a>
 
 ### 终端模拟器
 
@@ -216,8 +190,6 @@ Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUse
 
 ##
 
-<a id="debugging"></a>
-
 ### 调试
 
 可在 Termux 应用设置 → `<APP_NAME>` → `Debugging` → `Log Level` 中设置合适的 logcat 日志级别，帮助调试 Termux 应用及插件（要求 Termux `>= 0.118.0`）。默认 `Log Level` 为 `Normal`；`Verbose` 当前会记录更多信息。完成调试后，最好恢复为 `Normal`，否则正常操作中的私有数据可能传入 logcat，额外日志也会增加执行耗时。
@@ -230,8 +202,6 @@ Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUse
 
 报告问题时必须提供完整报告，可移除敏感信息。只提供错误报告的部分截图、而非文本的问题，很可能被自动关闭或删除。
 
-<a id="log-levels"></a>
-
 ##### 日志级别
 
 - `Off`：不记录日志。
@@ -240,11 +210,7 @@ Google Play 当前会尝试更新 F-Droid 安装，但由于移除了 [sharedUse
 - `Verbose`：进一步记录 verbose 消息。
 ##
 
-<a id="for-maintainers-and-contributors"></a>
-
 ## 维护者与贡献者
-
-<a id="profile-threading"></a>
 
 ### Profile 线程模型
 
@@ -268,8 +234,6 @@ Profile UI 必须使用 `ProfileManager` 上与生命周期绑定的异步方法
 
 Termux 及插件 `build.gradle` 中的 `versionName` 必须遵循[语义化版本 2.0.0](https://semver.org/spec/v2.0.0.html)，格式为 `major.minor.patch(-prerelease)(+buildmetadata)`。增加 versionName 或为 GitHub 新版本创建 tag 时，必须包含 patch 数字，例如 `v0.1.0`，而非 `v0.1`。build.gradle 和 `attach_debug_apks_to_release` 工作流也会验证版本，不符合规范时构建或附件上传将失败。
 
-<a id="commit-messages-guidelines"></a>
-
 ### 提交信息指南
 
 提交信息**必须**遵循 [Conventional Commits](https://www.conventionalcommits.org)，以便 [`create-conventional-changelog`](https://github.com/termux/create-conventional-changelog) 自动生成符合 [Keep a Changelog](https://github.com/olivierlacan/keep-a-changelog) 的变更日志；更多规范细节见其仓库。**`type` 和 `description` 首字母必须大写，描述应使用现在时。** 冒号 `:` 后必须有空格。破坏性变更在冒号前添加 `!`，使其在变更日志中自动突出显示。
@@ -292,8 +256,6 @@ Termux 及插件 `build.gradle` 中的 `versionName` 必须遵循[语义化版�
 - **Security**：安全漏洞相关变更。
 ##
 
-<a id="forking"></a>
-
 ## 创建 Fork
 
 - 修改应用包名需要的变更，见 [`TermuxConstants`](https://github.com/termux/termux-app/blob/master/termux-shared/src/main/java/com/termux/shared/termux/TermuxConstants.java) 的 Javadoc。
@@ -301,8 +263,6 @@ Termux 及插件 `build.gradle` 中的 `versionName` 必须遵循[语义化版�
 - 当前并非全部插件都使用 termux-shared 的 TermuxConstants，部分仍硬编码 `com.termux`，需要手动修补。
 - Fork Termux 插件时，使用 Termux 库的方法见 [Forking and Local Development](https://github.com/termux/termux-app/wiki/Termux-Libraries#forking-and-local-development)。
 ##
-
-<a id="sponsors-and-funders"></a>
 
 ## 赞助方与资助方
 
